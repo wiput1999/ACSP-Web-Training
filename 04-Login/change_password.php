@@ -1,7 +1,25 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['login'])) {
+    array_push($_SESSION["errors"], 'You must login first!');
+    header('Location: index.php');
+    exit();
+}
+
 require 'config.inc.php';
+
+$id = $_SESSION['login'];
+
+$stmt = $conn->prepare('SELECT * FROM member WHERE id = :id');
+
+$stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+$stmt->execute();
+
+if ($stmt->rowCount() > 0) {
+    $data = $stmt->fetch();
+}
 
 ?>
 <!DOCTYPE html>
@@ -73,56 +91,46 @@ require 'config.inc.php';
                 // Clear up error!
                 $_SESSION["errors"] = array();
             }
+            if($_SESSION['success']) {
+                echo "<div class='alert alert-success' role='alert'>Password change success!</div>";
+                unset($_SESSION['success']);
+            }
         ?>
         <div class="row">
-            <h1>Register</h1>
+            <h1>Change Password</h1>
             <hr>
-            <form action="do_register.php" method="POST" class="form-horizontal">
+            <form action="do_change_password.php" method="POST" class="form-horizontal">
                 <div class="form-group">
                     <label for="username" class="col-sm-2 control-label">Username : </label>
                     <div class="col-sm-10">
-                        <input type="text" name="username" class="form-control" id="username" placeholder="Username" aria-describedby="usernameHelp">
+                        <input type="text" class="form-control" id="username" placeholder="Username" value="<?=$data['username']?>" aria-describedby="usernameHelp" disabled>
                         <span id="usernameHelp" class="help-block">Username cannot be changed.</span>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="firstname" class="col-sm-2 control-label">Firstname : </label>
+                    <label for="newpassword" class="col-sm-2 control-label">New password : </label>
                     <div class="col-sm-10">
-                        <input type="text" name="firstname" class="form-control" id="firstname" placeholder="Firstname" aria-describedby="firstnameHelp">
-                        <span id="firstnameHelp" class="help-block">Username cannot be changed.</span>
+                        <input type="password" name="newpassword" class="form-control" id="newpassword" placeholder="Current Password" aria-describedby="newpasswordHelp">
+                        <span id="newpasswordHelp" class="help-block">New password</span>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="lastname" class="col-sm-2 control-label">Lastname : </label>
+                    <label for="cnewpassword" class="col-sm-2 control-label">Confirm new password : </label>
                     <div class="col-sm-10">
-                        <input type="text" name="lastname" class="form-control" id="lastname" placeholder="Lastname" aria-describedby="lastnameHelp">
-                        <span id="lastnameHelp" class="help-block">Username cannot be changed.</span>
+                        <input type="password" name="cnewpassword" class="form-control" id="cnewpassword" placeholder="Current Password" aria-describedby="cnewpasswordHelp">
+                        <span id="cnewpasswordHelp" class="help-block">Please confirm new password</span>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="email" class="col-sm-2 control-label">E-Mail : </label>
-                    <div class="col-sm-10">
-                        <input type="text" name="email" class="form-control" id="email" placeholder="E-Mail" aria-describedby="emailHelp">
-                        <span id="emailHelp" class="help-block">Username cannot be changed.</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="password" class="col-sm-2 control-label">Password : </label>
-                    <div class="col-sm-10">
-                        <input type="password" name="password" class="form-control" id="password" placeholder="Current Password" aria-describedby="passwordHelp">
-                        <span id="passwordHelp" class="help-block">Enter password.</span>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="cpassword" class="col-sm-2 control-label">Confim Password : </label>
+                    <label for="cpassword" class="col-sm-2 control-label">Current password : </label>
                     <div class="col-sm-10">
                         <input type="password" name="cpassword" class="form-control" id="cpassword" placeholder="Current Password" aria-describedby="cpasswordHelp">
-                        <span id="cpasswordHelp" class="help-block">Enter confirm password.</span>
+                        <span id="cpasswordHelp" class="help-block">Enter current password to confirm your identity.</span>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" name="send" class="btn btn-primary">Register</button>
+                        <button type="submit" name="send" class="btn btn-primary">Change</button>
                     </div>
                 </div>
             </form>
